@@ -93,7 +93,7 @@ function App() {
         title,
         body,
         icon,
-        tag,
+        tag, // Sử dụng tag được truyền vào
       });
       console.log("Đã gửi yêu cầu hiển thị thông báo đến Service Worker.");
     } else {
@@ -105,6 +105,9 @@ function App() {
   };
 
   const testSimpleNotification = async () => {
+    // Tạo tag duy nhất mỗi lần để đảm bảo thông báo mới được hiển thị
+    const notificationTag = `simple-test-notification-${Date.now()}`;
+
     // Nếu là iOS, báo không hỗ trợ thông báo đẩy web
     if (isIOS) {
       alert("iOS Safari không hỗ trợ Web Notifications thông thường.");
@@ -128,7 +131,7 @@ function App() {
         "Thông báo Test",
         "Đây là thông báo đơn giản từ React App!",
         "https://via.placeholder.com/64?text=NT",
-        "simple-test-notification"
+        notificationTag // Truyền tag duy nhất
       );
     } else if (Notification.permission === "denied") {
       alert(
@@ -147,6 +150,9 @@ function App() {
   };
 
   const testMinimalNotification = async () => {
+    // Tạo tag duy nhất mỗi lần để đảm bảo thông báo mới được hiển thị
+    const notificationTag = `minimal-test-notification-${Date.now()}`;
+
     if (isIOS) {
       alert("iOS Safari không hỗ trợ Web Notifications thông thường.");
       return;
@@ -161,7 +167,7 @@ function App() {
         "URGENT TEST!",
         "Đây là một thông báo tối thiểu.",
         "https://via.placeholder.com/64?text=MIN",
-        "minimal-test-notification"
+        notificationTag // Truyền tag duy nhất
       );
     } else if (Notification.permission === "denied") {
       alert("Quyền thông báo đã bị từ chối.");
@@ -170,12 +176,10 @@ function App() {
     }
   };
 
-  // Hàm này để mô phỏng Push Notification bằng Service Worker.
-  // ĐỂ CÁI NÀY THỰC SỰ HOẠT ĐỘNG, BẠN CẦN:
-  // 1. Một Service Worker file (ví dụ: sw.js) được đăng ký. (Đã làm ở trên)
-  // 2. Một backend server để gửi Web Push Protocol đến Service Worker. (Chưa làm)
-  // 3. Người dùng phải cấp quyền cho Push API. (Đã làm với Notification.requestPermission)
   const testReactPushNotification = async () => {
+    // Tạo tag duy nhất mỗi lần để đảm bảo thông báo mới được hiển thị
+    const notificationTag = `react-push-test-${Date.now()}`;
+
     if (isIOS && !serviceWorkerSupported) {
       alert(
         "iOS Safari không hỗ trợ Web Notifications thông thường. Để nhận Push Notifications trên iOS, cần sử dụng Service Worker và APNs (Apple Push Notification service), rất phức tạp."
@@ -189,23 +193,20 @@ function App() {
       return;
     }
 
-    // Phần này vẫn cần server-side logic để gửi Push Notification
     alert(
       "Để thực hiện 'Test React Push Notification', bạn cần một Backend để gửi Push Notification theo chuẩn Web Push Protocol đến Service Worker đã đăng ký."
     );
     console.log("Để thực hiện 'Test React Push Notification':");
-    console.log("- Đăng ký Push Subscription cho người dùng."); // Cần gọi navigator.serviceWorker.ready.then(reg => reg.pushManager.subscribe(...))
+    console.log("- Đăng ký Push Subscription cho người dùng.");
     console.log("- Gửi Push Message từ server đến Service Worker.");
     console.log("Service Worker sẽ xử lý và hiển thị thông báo.");
 
-    // Ví dụ sơ lược về cách service worker có thể hiển thị thông báo ngay lập tức
-    // (Đây không phải là push thật sự từ server, mà là tạo thông báo từ client qua SW)
     if (Notification.permission === "granted" && serviceWorkerSupported) {
       showNotificationViaServiceWorker(
         "React Push Test (SW)",
         "Đây là thông báo đẩy mô phỏng từ Service Worker!",
         "https://via.placeholder.com/64?text=SW",
-        "react-push-test"
+        notificationTag // Truyền tag duy nhất
       );
     } else if (Notification.permission === "denied") {
       alert(
@@ -214,7 +215,7 @@ function App() {
     } else {
       const permission = await requestPermission();
       if (permission === "granted") {
-        testReactPushNotification(); // Thử lại sau khi cấp quyền
+        testReactPushNotification();
       } else {
         alert("Không thể gửi push vì quyền chưa được cấp.");
       }
