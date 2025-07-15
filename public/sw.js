@@ -1,89 +1,69 @@
-// sw.js - Đặt file này trong thư mục public/
-
+// service-worker.js
 self.addEventListener("install", (event) => {
   console.log("Service Worker: Installed");
-  // Skip waiting để active ngay lập tức
-  self.skipWaiting();
+  self.skipWaiting(); // Kích hoạt Service Worker mới ngay lập tức
 });
 
 self.addEventListener("activate", (event) => {
   console.log("Service Worker: Activated");
-  // Claim tất cả clients
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(clients.claim()); // Đảm bảo Service Worker kiểm soát tất cả các client
 });
 
-// Lắng nghe push events
+// Lắng nghe sự kiện 'message' từ trang chính
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "DISPLAY_NOTIFICATION") {
+    const { title, body, icon, tag } = event.data;
+    console.log(
+      "Service Worker: Received message to display notification:",
+      event.data
+    );
+    self.registration
+      .showNotification(title, {
+        body: body,
+        icon: icon,
+        tag: tag,
+        requireInteraction: true,
+        vibrate: [200, 100, 200],
+      })
+      .then(() => {
+        console.log("Service Worker: Notification shown successfully.");
+      })
+      .catch((error) => {
+        console.error("Service Worker: Error showing notification:", error);
+      });
+  }
+});
+
+// Lắng nghe sự kiện 'push' (nếu bạn muốn triển khai push notifications thực sự từ server)
 self.addEventListener("push", (event) => {
-  console.log("Service Worker: Push received", event);
-
-  let data = {};
-  if (event.data) {
-    data = event.data.json();
-  }
-
+  const data = event.data.json();
+  console.log("Service Worker: Push received:", data);
+  const title = data.title || "Thông báo đẩy";
   const options = {
-    body: data.body || "Bạn có thông báo mới!",
-    icon: data.icon || "/icon-192.png",
-    badge: data.badge || "/badge-72.png",
-    tag: data.tag || "default",
-    data: data.data || {},
-    actions: [
-      {
-        action: "open",
-        title: "Mở",
-      },
-      {
-        action: "close",
-        title: "Đóng",
-      },
-    ],
+    body: data.body || "Bạn có một tin nhắn mới.",
+    icon: data.icon || "https://via.placeholder.com/64",
+    tag: data.tag || "push-notification",
+    requireInteraction: true,
   };
-
-  event.waitUntil(
-    self.registration.showNotification(data.title || "Thông báo mới", options)
-  );
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// Xử lý click notification
+// Lắng nghe sự kiện 'notificationclick'
 self.addEventListener("notificationclick", (event) => {
-  console.log("Service Worker: Notification clicked", event);
+  console.log("Service Worker: Notification clicked:", event.notification.tag);
+  event.notification.close(); // Đóng thông báo sau khi click
 
-  event.notification.close();
-
-  if (event.action === "close") {
-    return;
-  }
-
-  // Mở hoặc focus vào window
+  // Mở một URL hoặc tập trung vào một tab hiện có
   event.waitUntil(
     clients.matchAll({ type: "window" }).then((clientList) => {
       for (const client of clientList) {
-        if (client.url === "/" && "focus" in client) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
           return client.focus();
         }
       }
       if (clients.openWindow) {
-        return clients.openWindow("/");
+        return clients.openWindow("/"); // Mở trang chính nếu chưa có tab nào mở
       }
     })
   );
-});
-
-// Lắng nghe message từ main thread
-self.addEventListener("message", (event) => {
-  console.log("Service Worker: Message received", event.data);
-
-  if (event.data.type === "SHOW_NOTIFICATION") {
-    const { data } = event.data;
-
-    const options = {
-      body: data.body || "Thông báo test",
-      icon: data.icon || "/icon-192.png",
-      badge: data.badge || "/badge-72.png",
-      tag: data.tag || "test",
-      data: data.data || {},
-    };
-
-    self.registration.showNotification(data.title || "Test", options);
-  }
 });

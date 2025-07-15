@@ -77,11 +77,36 @@ function App() {
     }
   };
 
+  const showNotificationViaServiceWorker = (title, body, icon, tag) => {
+    if (!serviceWorkerSupported) {
+      alert("Trình duyệt không hỗ trợ Service Worker.");
+      return;
+    }
+    if (Notification.permission !== "granted") {
+      alert("Quyền thông báo chưa được cấp.");
+      return;
+    }
+
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: "DISPLAY_NOTIFICATION",
+        title,
+        body,
+        icon,
+        tag,
+      });
+      console.log("Đã gửi yêu cầu hiển thị thông báo đến Service Worker.");
+    } else {
+      alert(
+        "Service Worker chưa được kích hoạt. Vui lòng tải lại trang hoặc đợi SW cài đặt xong."
+      );
+      console.warn("Chưa có Service Worker nào được kích hoạt.");
+    }
+  };
+
   const testSimpleNotification = async () => {
     // Nếu là iOS, báo không hỗ trợ thông báo đẩy web
     if (isIOS) {
-      // Vì bạn chỉ muốn thông báo ngoài trình duyệt, và iOS không hỗ trợ,
-      // nên chỉ cần thông báo lỗi hoặc không làm gì cả.
       alert("iOS Safari không hỗ trợ Web Notifications thông thường.");
       return;
     }
@@ -96,37 +121,15 @@ function App() {
 
     // Kiểm tra quyền trước khi tạo thông báo
     if (Notification.permission === "granted") {
-      console.log("Permission granted, creating notification...");
-      try {
-        const notification = new Notification("Thông báo Test", {
-          body: "Đây là thông báo đơn giản từ React App!",
-          icon: "https://via.placeholder.com/64?text=NT", // Icon cho Notification
-          requireInteraction: true, // Yêu cầu người dùng tương tác
-          tag: "simple-test-notification",
-          vibrate: [200, 100, 200], // Rung (chỉ trên một số trình duyệt)
-        });
-
-        console.log("Notification created:", notification);
-
-        notification.onshow = () => console.log("Notification shown");
-        notification.onclick = () => {
-          console.log("Notification clicked");
-          window.focus(); // Tập trung vào tab của ứng dụng khi click
-        };
-        notification.onerror = (error) =>
-          console.error("Notification error:", error);
-        notification.onclose = () => console.log("Notification closed");
-
-        setTimeout(() => {
-          if (notification) {
-            // Đảm bảo notification tồn tại trước khi đóng
-            notification.close();
-          }
-        }, 8000); // Đóng sau 8 giây
-      } catch (error) {
-        console.error("Error creating notification:", error);
-        alert("Lỗi tạo notification: " + error.message); // Sử dụng alert thay vì showMobileAlert
-      }
+      console.log(
+        "Permission granted, attempting to display notification via Service Worker..."
+      );
+      showNotificationViaServiceWorker(
+        "Thông báo Test",
+        "Đây là thông báo đơn giản từ React App!",
+        "https://via.placeholder.com/64?text=NT",
+        "simple-test-notification"
+      );
     } else if (Notification.permission === "denied") {
       alert(
         "Quyền thông báo đã bị từ chối. Vui lòng cấp quyền trong cài đặt trình duyệt."
@@ -136,19 +139,42 @@ function App() {
       console.log("Permission not granted, requesting...");
       const permission = await requestPermission();
       if (permission === "granted") {
-        // Thử lại nếu quyền được cấp
-        testSimpleNotification();
+        testSimpleNotification(); // Thử lại nếu quyền được cấp
       } else {
         alert("Không thể tạo thông báo vì quyền chưa được cấp.");
       }
     }
   };
 
+  const testMinimalNotification = async () => {
+    if (isIOS) {
+      alert("iOS Safari không hỗ trợ Web Notifications thông thường.");
+      return;
+    }
+    if (!notificationSupported) {
+      alert("Thiết bị này không hỗ trợ Web Notifications.");
+      return;
+    }
+
+    if (Notification.permission === "granted") {
+      showNotificationViaServiceWorker(
+        "URGENT TEST!",
+        "Đây là một thông báo tối thiểu.",
+        "https://via.placeholder.com/64?text=MIN",
+        "minimal-test-notification"
+      );
+    } else if (Notification.permission === "denied") {
+      alert("Quyền thông báo đã bị từ chối.");
+    } else {
+      alert("Không thể tạo notification. Vui lòng cấp quyền trước.");
+    }
+  };
+
   // Hàm này để mô phỏng Push Notification bằng Service Worker.
   // ĐỂ CÁI NÀY THỰC SỰ HOẠT ĐỘNG, BẠN CẦN:
-  // 1. Một Service Worker file (ví dụ: sw.js) được đăng ký.
-  // 2. Một backend server để gửi Web Push Protocol đến Service Worker.
-  // 3. Người dùng phải cấp quyền cho Push API.
+  // 1. Một Service Worker file (ví dụ: sw.js) được đăng ký. (Đã làm ở trên)
+  // 2. Một backend server để gửi Web Push Protocol đến Service Worker. (Chưa làm)
+  // 3. Người dùng phải cấp quyền cho Push API. (Đã làm với Notification.requestPermission)
   const testReactPushNotification = async () => {
     if (isIOS && !serviceWorkerSupported) {
       alert(
@@ -163,35 +189,24 @@ function App() {
       return;
     }
 
-    // Đây là phần giả định, bạn cần thay thế bằng logic đăng ký Push Subscription thật
-    // và gửi tin nhắn từ server đến service worker.
+    // Phần này vẫn cần server-side logic để gửi Push Notification
     alert(
-      "Tính năng này yêu cầu Service Worker và một Backend để gửi Push Notification. Bạn sẽ cần triển khai một giải pháp push notification đầy đủ."
+      "Để thực hiện 'Test React Push Notification', bạn cần một Backend để gửi Push Notification theo chuẩn Web Push Protocol đến Service Worker đã đăng ký."
     );
     console.log("Để thực hiện 'Test React Push Notification':");
-    console.log("- Đăng ký một Service Worker.");
-    console.log("- Đăng ký Push Subscription cho người dùng.");
+    console.log("- Đăng ký Push Subscription cho người dùng."); // Cần gọi navigator.serviceWorker.ready.then(reg => reg.pushManager.subscribe(...))
     console.log("- Gửi Push Message từ server đến Service Worker.");
     console.log("Service Worker sẽ xử lý và hiển thị thông báo.");
 
-    // Ví dụ sơ lược về cách service worker có thể hiển thị thông báo
-    // (Đây là client-side, chỉ mang tính minh họa, push thật sự đến từ server)
+    // Ví dụ sơ lược về cách service worker có thể hiển thị thông báo ngay lập tức
+    // (Đây không phải là push thật sự từ server, mà là tạo thông báo từ client qua SW)
     if (Notification.permission === "granted" && serviceWorkerSupported) {
-      // Gửi một thông điệp tới Service Worker để yêu cầu nó hiển thị thông báo
-      if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: "DISPLAY_NOTIFICATION",
-          title: "React Push Test (SW)",
-          body: "Thông báo đẩy từ Service Worker!",
-          icon: "https://via.placeholder.com/64?text=SW",
-        });
-        console.log("Đã gửi yêu cầu hiển thị thông báo đến Service Worker.");
-      } else {
-        console.warn("Chưa có Service Worker nào được kích hoạt.");
-        alert(
-          "Chưa có Service Worker nào được kích hoạt. Vui lòng tải lại trang hoặc đợi SW cài đặt xong."
-        );
-      }
+      showNotificationViaServiceWorker(
+        "React Push Test (SW)",
+        "Đây là thông báo đẩy mô phỏng từ Service Worker!",
+        "https://via.placeholder.com/64?text=SW",
+        "react-push-test"
+      );
     } else if (Notification.permission === "denied") {
       alert(
         "Quyền thông báo bị từ chối. Không thể gửi push qua Service Worker."
@@ -205,14 +220,6 @@ function App() {
       }
     }
   };
-
-  // Hàm showMobileAlert giữ lại để hiển thị các thông báo lỗi hoặc cảnh báo
-  // mà không cần đến in-app notification.
-  // const showMobileAlert = (message) => {
-  //   alert(message);
-  // };
-
-  // **Đã xóa hàm showInAppNotification**
 
   // Hiển thị lỗi nếu có
   if (error) {
@@ -308,33 +315,16 @@ function App() {
         <button
           onClick={testSimpleNotification}
           style={{ padding: "10px 20px", marginRight: "10px" }}
-          // Chỉ kích hoạt nếu có hỗ trợ Web Notification
-          disabled={!notificationSupported}
+          // Chỉ kích hoạt nếu có hỗ trợ Web Notification VÀ Service Worker
+          disabled={!notificationSupported || !serviceWorkerSupported}
         >
-          Test Thông báo Đơn giản
+          Test Thông báo Đơn giản (qua SW)
         </button>
       </div>
 
       <div style={{ marginBottom: "10px" }}>
         <button
-          onClick={() => {
-            try {
-              if (
-                notificationSupported &&
-                Notification.permission === "granted"
-              ) {
-                const n = new Notification("URGENT TEST!");
-                console.log("Minimal notification:", n);
-              } else if (Notification.permission === "denied") {
-                alert("Quyền thông báo đã bị từ chối.");
-              } else {
-                alert("Không thể tạo notification. Vui lòng cấp quyền trước.");
-              }
-            } catch (err) {
-              console.error("Error creating minimal notification:", err);
-              alert("Lỗi: " + err.message);
-            }
-          }}
+          onClick={testMinimalNotification}
           style={{
             padding: "10px 20px",
             marginRight: "10px",
@@ -343,10 +333,10 @@ function App() {
             border: "none",
             borderRadius: "4px",
           }}
-          // Chỉ kích hoạt nếu có hỗ trợ Web Notification
-          disabled={!notificationSupported}
+          // Chỉ kích hoạt nếu có hỗ trợ Web Notification VÀ Service Worker
+          disabled={!notificationSupported || !serviceWorkerSupported}
         >
-          Test Thông báo Tối thiểu
+          Test Thông báo Tối thiểu (qua SW)
         </button>
       </div>
 
@@ -368,8 +358,6 @@ function App() {
           Test React Push Notification (Cần SW & Backend)
         </button>
       </div>
-
-      {/* **Đã xóa nút Test In-App Notification (Mobile Alternative)** */}
 
       <div style={{ marginTop: "20px", fontSize: "14px", color: "#666" }}>
         <strong>Thông tin Debug:</strong>
