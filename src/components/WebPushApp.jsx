@@ -105,10 +105,10 @@ const WebPushApp = () => {
     }
   };
 
-  const testSend = () => {
+  const testSend = (text) => {
     const title = "Đình Dũng thông báo nè";
     const options = {
-      body: "Đây là thông báo từ Đình Dũng",
+      body: text,
       icon: "/images/push_icon.jpg",
       image:
         "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Orange_tabby_cat_sitting_on_fallen_leaves-Hisashi-01A.jpg/1920px-Orange_tabby_cat_sitting_on_fallen_leaves-Hisashi-01A.jpg",
@@ -131,17 +131,20 @@ const WebPushApp = () => {
     const initializeTitle = async () => {
       // 1. Lấy title hiện tại từ server để khởi tạo localStorage
       const res = await apiThongBao({ action: "get_current_title" });
-      if (res && res.success && res.title !== undefined) {
+      if (res && res.data.success && res.data.title !== undefined) {
         if (
           currentTitleRef.current === null ||
-          currentTitleRef.current !== res.title
+          currentTitleRef.current !== res.data.title
         ) {
-          localStorage.setItem("notification_title", res.title);
-          currentTitleRef.current = res.title; // Cập nhật ref
+          localStorage.setItem("notification_title", res.data.title);
+          currentTitleRef.current = res.data.title; // Cập nhật ref
           setHasNotified(false); // Reset trạng thái thông báo nếu title thay đổi khi khởi tạo
-          console.log("Đã khởi tạo/cập nhật title lần đầu:", res.title);
+          console.log("Đã khởi tạo/cập nhật title lần đầu:", res.data.title);
         } else {
-          console.log("Title lúc khởi tạo giống với localStorage:", res.title);
+          console.log(
+            "Title lúc khởi tạo giống với localStorage:",
+            res.data.title
+          );
         }
       } else {
         console.error("Không thể lấy title ban đầu từ server.");
@@ -162,20 +165,23 @@ const WebPushApp = () => {
           title: storedTitle, // Gửi title đang lưu ở client để so sánh
         });
 
-        if (res && res.success) {
-          if (res.changed) {
+        if (res && res.data.success) {
+          if (res.data.changed) {
             // Title trên server đã thay đổi
             if (!hasNotified) {
               // Chỉ thông báo nếu chưa thông báo cho lần thay đổi này
-              testSend(); // Hiển thị thông báo
+              testSend(res.data.current_db_title); // Hiển thị thông báo
               setHasNotified(true); // Đặt trạng thái đã thông báo
             }
             // Luôn cập nhật localStorage với title mới nhất từ server
-            localStorage.setItem("notification_title", res.current_db_title);
-            currentTitleRef.current = res.current_db_title; // Cập nhật ref
+            localStorage.setItem(
+              "notification_title",
+              res.data.current_db_title
+            );
+            currentTitleRef.current = res.data.current_db_title; // Cập nhật ref
             console.log(
               "Title đã thay đổi, cập nhật localStorage:",
-              res.current_db_title
+              res.data.current_db_title
             );
           } else {
             // Title trên server không thay đổi
