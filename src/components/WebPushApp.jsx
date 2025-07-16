@@ -49,9 +49,10 @@ const WebPushApp = () => {
 
   const initServiceWorker = async () => {
     try {
+      // Sử dụng đường dẫn tương đối trong React
       let swRegistration = await navigator.serviceWorker.register(
-        "https://anhdungit-09.github.io/push/serviceworker.js",
-        { scope: "/push/" }
+        "/serviceworker.js",
+        { scope: "/" }
       );
       let pushManager = swRegistration.pushManager;
 
@@ -108,11 +109,11 @@ const WebPushApp = () => {
     const title = "Đình Dũng thông báo";
     const options = {
       body: "Đây là thông báo từ Đình Dũng",
-      icon: "https://anhdungit-09.github.io/push/images/push_icon.jpg",
+      icon: "/images/push_icon.jpg",
       image:
         "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Orange_tabby_cat_sitting_on_fallen_leaves-Hisashi-01A.jpg/1920px-Orange_tabby_cat_sitting_on_fallen_leaves-Hisashi-01A.jpg",
       data: {
-        url: "https://anhdungit-09.github.io/push/?page=success",
+        url: window.location.origin + "/?page=success",
         message_id: "your_internal_unique_message_id_for_tracking",
       },
     };
