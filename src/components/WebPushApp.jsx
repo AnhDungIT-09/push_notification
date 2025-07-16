@@ -122,10 +122,13 @@ const WebPushApp = () => {
     });
   };
   useEffect(() => {
-    if (true) {
+    const intervalId = setInterval(() => {
       testSend();
-    }
-  });
+    }, 1000); // 1000 milliseconds = 1 second
+
+    // Cleanup function to clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#cfc7e2" }}>
       <div className="max-w-4xl mx-auto p-4">
