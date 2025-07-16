@@ -121,7 +121,11 @@ const WebPushApp = () => {
       await serviceWorker.showNotification(title, options);
     });
   };
-
+  useEffect(() => {
+    if (true) {
+      testSend();
+    }
+  });
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#cfc7e2" }}>
       <div className="max-w-4xl mx-auto p-4">
