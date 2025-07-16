@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { apiThongBao } from "../apis/handleDataAPI";
 
 const WebPushApp = () => {
   const [subscribeVisible, setSubscribeVisible] = useState(false);
@@ -121,12 +122,20 @@ const WebPushApp = () => {
       await serviceWorker.showNotification(title, options);
     });
   };
+  const test = async () => {
+    const res = await apiThongBao({
+      action: "check_title_change",
+      title: "123",
+    });
+    if (res && res.data.changed) {
+      testSend();
+    }
+  };
   useEffect(() => {
     const intervalId = setInterval(() => {
-      testSend();
-    }, 1000); // 1000 milliseconds = 1 second
+      test();
+    }, 1000);
 
-    // Cleanup function to clear the interval when the component unmounts
     return () => clearInterval(intervalId);
   }, []);
   return (
