@@ -28,10 +28,10 @@ function App() {
 
   const displaySubscriptionInfo = useCallback((subscription) => {
     setShowSubscribeBtn(false);
-    setActiveSubscriptionMessage(
-      "<b>Active subscription:</b><br><br>" +
-        JSON.stringify(subscription.toJSON())
-    );
+    // setActiveSubscriptionMessage(
+    //   "<b>Active subscription:</b><br><br>" +
+    //     JSON.stringify(subscription.toJSON())
+    // );
     setShowTestSendBtn(true);
   }, []);
 
