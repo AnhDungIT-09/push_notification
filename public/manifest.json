@@ -1,15 +1,20 @@
 {
-  "name": "Push Notification App",
-  "short_name": "PushApp",
-  "start_url": "/",
+  "name": "ĐÌNH DŨNG",
+  "short_name": "ĐÌNH DŨNG",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#cfc7e2",
+  "background_color": "#cfc7e2",
+  "start_url": "/",
   "icons": [
     {
-      "src": "https://via.placeholder.com/192",
+      "src": "images/favicon.png",
       "sizes": "192x192",
       "type": "image/png"
+    },
+    {
+      "src": "images/push_icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
     }
   ]
 }
