@@ -1,15 +1,14 @@
-// serviceworker.js
 self.addEventListener("push", (event) => {
-  // Cấu trúc khóa PushData chuẩn https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification
+  // PushData keys structure standart https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification
   let pushData = event.data.json();
   if (!pushData || !pushData.title) {
     console.error(
-      "Đã nhận WebPush với tiêu đề trống. Nội dung đã nhận: ",
+      "Received WebPush with an empty title. Received body: ",
       pushData
     );
   }
   self.registration.showNotification(pushData.title, pushData).then(() => {
-    // Bạn có thể lưu vào phân tích của mình sự kiện thông báo đã được hiển thị
+    // You can save to your analytics fact that push was shown
     // fetch('https://your_backend_server.com/track_show?message_id=' + pushData.data.message_id);
   });
 });
@@ -19,21 +18,21 @@ self.addEventListener("notificationclick", function (event) {
 
   if (!event.notification.data) {
     console.error(
-      "Nhấp vào WebPush với dữ liệu trống, nơi đáng lẽ phải có URL. Thông báo: ",
+      "Click on WebPush with empty data, where url should be. Notification: ",
       event.notification
     );
     return;
   }
   if (!event.notification.data.url) {
     console.error(
-      "Nhấp vào WebPush không có URL. Thông báo: ",
+      "Click on WebPush without url. Notification: ",
       event.notification
     );
     return;
   }
 
   clients.openWindow(event.notification.data.url).then(() => {
-    // Bạn có thể gửi yêu cầu fetch tới API phân tích của mình sự kiện thông báo đã được nhấp
+    // You can send fetch request to your analytics API fact that push was clicked
     // fetch('https://your_backend_server.com/track_click?message_id=' + pushData.data.message_id);
   });
 });
