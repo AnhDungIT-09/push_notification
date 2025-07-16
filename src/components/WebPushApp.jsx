@@ -173,12 +173,6 @@ const WebPushApp = () => {
             </button>
           )}
         </div>
-
-        <div className="fixed bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-2 rounded">
-          <a href="#" className="text-white hover:text-gray-300">
-            Source Link
-          </a>
-        </div>
       </div>
     </div>
   );
