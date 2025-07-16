@@ -1,5 +1,4 @@
 self.addEventListener("push", (event) => {
-  // PushData keys structure standart https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification
   let pushData = event.data.json();
   if (!pushData || !pushData.title) {
     console.error(

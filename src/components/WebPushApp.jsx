@@ -105,7 +105,7 @@ const WebPushApp = () => {
   };
 
   const testSend = () => {
-    const title = "Đình Dũng thông báo";
+    const title = "Đình Dũng thông báo nè";
     const options = {
       body: "Đây là thông báo từ Đình Dũng",
       icon: "/images/push_icon.jpg",
