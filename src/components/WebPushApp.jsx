@@ -141,12 +141,12 @@ const WebPushApp = () => {
       }
     }
 
-    console.log(userDataObject);
+    console.log(userDataObject.id_phong_ban);
     // Hàm được gọi lần đầu khi component mount
     const initializeTitle = async () => {
       // 1. Lấy title hiện tại từ server để khởi tạo localStorage
       const res = await apiThongBao({ action: "get_current_title" });
-      console.log(res);
+
       if (res && res.data.success && res.data.title !== undefined) {
         if (
           currentTitleRef.current === null ||
@@ -180,11 +180,11 @@ const WebPushApp = () => {
           action: "check_title_change",
           title: storedTitle, // Gửi title đang lưu ở client để so sánh
         });
-        console.log(res);
         if (res && res.data.success) {
           if (
             res.data.changed &&
-            String(res.data.id_phong_ban) === String(userDataObject)
+            String(res.data.id_phong_ban) ===
+              String(userDataObject.id_phong_ban)
           ) {
             // Title trên server đã thay đổi
             if (!hasNotified) {
