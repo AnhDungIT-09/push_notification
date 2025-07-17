@@ -127,10 +127,26 @@ const WebPushApp = () => {
   const currentTitleRef = useRef(localStorage.getItem("notification_title"));
 
   useEffect(() => {
+    const userDataString = localStorage.getItem("userData"); // Lấy chuỗi JSON từ localStorage
+
+    let userDataObject = null; // Khởi tạo biến để lưu đối tượng
+
+    if (userDataString) {
+      try {
+        userDataObject = JSON.parse(userDataString); // Chuyển đổi chuỗi JSON thành đối tượng JavaScript
+      } catch (e) {
+        console.error("Failed to parse userData from localStorage:", e);
+        // Xử lý lỗi nếu chuỗi JSON không hợp lệ
+        localStorage.removeItem("userData"); // Có thể xóa mục bị hỏng
+      }
+    }
+
+    console.log(userDataObject);
     // Hàm được gọi lần đầu khi component mount
     const initializeTitle = async () => {
       // 1. Lấy title hiện tại từ server để khởi tạo localStorage
       const res = await apiThongBao({ action: "get_current_title" });
+      console.log(res);
       if (res && res.data.success && res.data.title !== undefined) {
         if (
           currentTitleRef.current === null ||
@@ -139,7 +155,7 @@ const WebPushApp = () => {
           localStorage.setItem("notification_title", res.data.title);
           currentTitleRef.current = res.data.title; // Cập nhật ref
           setHasNotified(false); // Reset trạng thái thông báo nếu title thay đổi khi khởi tạo
-          console.log("Đã khởi tạo/cập nhật title lần đầu:", res.data.title);
+          // console.log("Đã khởi tạo/cập nhật title lần đầu:", res.data.title);
         } else {
           console.log(
             "Title lúc khởi tạo giống với localStorage:",
@@ -164,9 +180,12 @@ const WebPushApp = () => {
           action: "check_title_change",
           title: storedTitle, // Gửi title đang lưu ở client để so sánh
         });
-
+        console.log(res);
         if (res && res.data.success) {
-          if (res.data.changed) {
+          if (
+            res.data.changed &&
+            String(res.data.id_phong_ban) === String(userDataObject)
+          ) {
             // Title trên server đã thay đổi
             if (!hasNotified) {
               // Chỉ thông báo nếu chưa thông báo cho lần thay đổi này
@@ -179,19 +198,19 @@ const WebPushApp = () => {
               res.data.current_db_title
             );
             currentTitleRef.current = res.data.current_db_title; // Cập nhật ref
-            console.log(
-              "Title đã thay đổi, cập nhật localStorage:",
-              res.data.current_db_title
-            );
+            // console.log(
+            //   "Title đã thay đổi, cập nhật localStorage:",
+            //   res.data.current_db_title
+            // );
           } else {
             // Title trên server không thay đổi
             if (hasNotified) {
               // Nếu trước đó đã thông báo, nhưng giờ title không thay đổi,
               // thì reset trạng thái thông báo để chuẩn bị cho lần thay đổi tiếp theo
               setHasNotified(false);
-              console.log("Title không thay đổi, reset trạng thái thông báo.");
+              // console.log("Title không thay đổi, reset trạng thái thông báo.");
             }
-            console.log("Title không thay đổi.");
+            // console.log("Title không thay đổi.");
           }
         } else {
           console.error(
@@ -211,6 +230,7 @@ const WebPushApp = () => {
     // Hàm cleanup: Xóa interval khi component unmount
     return () => clearInterval(intervalId);
   }, [hasNotified]);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#cfc7e2" }}>
       <div className="max-w-4xl mx-auto p-4">

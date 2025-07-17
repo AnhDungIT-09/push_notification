@@ -40,7 +40,6 @@ function App() {
     localStorage.setItem("authToken", token); // Store token
     localStorage.setItem("userData", JSON.stringify(userData)); // Store user data
   };
-
   // Function to handle logout
   const handleLogout = () => {
     setIsAuthenticated(false);

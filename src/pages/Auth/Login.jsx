@@ -43,7 +43,7 @@ const Login = ({ onLoginSuccess }) => {
           id: 1,
           name: "Admin User",
           email: formData.email,
-          role: "admin",
+          id_phong_ban: "1",
         };
 
         // Gọi callback để thông báo đăng nhập thành công
@@ -73,16 +73,16 @@ const Login = ({ onLoginSuccess }) => {
         // Tạo token và thông tin user giả lập
         const token = "fake-jwt-token-" + Date.now();
         const userData = {
-          id: 2,
-          email: user.email,
+          id: res.data.user.id,
+          email: res.data.user.gmail,
           name: user.displayName,
-          role: "admin",
+          id_phong_ban: res.data.user.id_phong_ban,
         };
 
         // Gọi callback để thông báo đăng nhập thành công
         onLoginSuccess(userData, token);
         message.success("Đăng nhập Google thành công!");
-        navigate("/");
+        // navigate("/");
       }
     } catch (error) {
       console.error("Google Login Error:", error);
