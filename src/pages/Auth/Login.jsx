@@ -7,6 +7,8 @@ const Login = ({ onLoginSuccess }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [emailCopied, setEmailCopied] = useState(false); // State để hiển thị thông báo copy email
+  const [passwordCopied, setPasswordCopied] = useState(false); // State để hiển thị thông báo copy password
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,6 +50,30 @@ const Login = ({ onLoginSuccess }) => {
       setError("Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Hàm copy text vào clipboard
+  const copyToClipboard = (text, type) => {
+    // Tạo một textarea tạm thời
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand("copy"); // Sử dụng document.execCommand('copy')
+      if (type === "email") {
+        setEmailCopied(true);
+        setTimeout(() => setEmailCopied(false), 2000); // Hiển thị "Copied!" trong 2 giây
+      } else if (type === "password") {
+        setPasswordCopied(true);
+        setTimeout(() => setPasswordCopied(false), 2000); // Hiển thị "Copied!" trong 2 giây
+      }
+    } catch (err) {
+      console.error("Không thể copy: ", err);
+      alert("Không thể copy vào clipboard. Vui lòng thử lại."); // Fallback alert nếu copy thất bại
+    } finally {
+      document.body.removeChild(textarea); // Xóa textarea tạm thời
     }
   };
 
@@ -145,10 +171,65 @@ const Login = ({ onLoginSuccess }) => {
         <h3 className="text-sm font-medium text-blue-800 mb-2">
           Tài khoản demo:
         </h3>
-        <p className="text-sm text-blue-700">
-          <strong>Email:</strong> admin@example.com
-          <br />
-          <strong>Mật khẩu:</strong> password
+        <p className="text-sm text-blue-700 flex items-center justify-between">
+          <span>
+            <strong>Email:</strong> admin@example.com
+          </span>
+          <button
+            type="button"
+            onClick={() => copyToClipboard("admin@example.com", "email")}
+            className="ml-2 p-1 rounded-md hover:bg-blue-100 transition duration-200 relative"
+            title="Copy email"
+          >
+            <svg
+              className="w-4 h-4 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+              />
+            </svg>
+            {emailCopied && (
+              <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs px-2 py-1 rounded-md whitespace-nowrap">
+                Đã copy!
+              </span>
+            )}
+          </button>
+        </p>
+        <p className="text-sm text-blue-700 flex items-center justify-between mt-2">
+          <span>
+            <strong>Mật khẩu:</strong> password
+          </span>
+          <button
+            type="button"
+            onClick={() => copyToClipboard("password", "password")}
+            className="ml-2 p-1 rounded-md hover:bg-blue-100 transition duration-200 relative"
+            title="Copy mật khẩu"
+          >
+            <svg
+              className="w-4 h-4 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+              />
+            </svg>
+            {passwordCopied && (
+              <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs px-2 py-1 rounded-md whitespace-nowrap">
+                Đã copy!
+              </span>
+            )}
+          </button>
         </p>
       </div>
     </form>
