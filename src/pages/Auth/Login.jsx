@@ -70,22 +70,20 @@ const Login = ({ onLoginSuccess }) => {
       });
       console.log(res);
       if (res.data.success) {
-        message.warning("Tài khoản chưa được đăng ký trong hệ thống!");
-        return;
-      }
-      // Tạo token và thông tin user giả lập
-      const token = "fake-jwt-token-" + Date.now();
-      const userData = {
-        id: 2,
-        email: user.email,
-        name: user.displayName,
-        role: "admin",
-      };
+        // Tạo token và thông tin user giả lập
+        const token = "fake-jwt-token-" + Date.now();
+        const userData = {
+          id: 2,
+          email: user.email,
+          name: user.displayName,
+          role: "admin",
+        };
 
-      // Gọi callback để thông báo đăng nhập thành công
-      onLoginSuccess(userData, token);
-      message.success("Đăng nhập Google thành công!");
-      navigate("/");
+        // Gọi callback để thông báo đăng nhập thành công
+        onLoginSuccess(userData, token);
+        message.success("Đăng nhập Google thành công!");
+        navigate("/");
+      }
     } catch (error) {
       console.error("Google Login Error:", error);
       message.error("Đăng nhập Google thất bại!");
