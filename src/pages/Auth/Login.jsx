@@ -65,8 +65,8 @@ const Login = ({ onLoginSuccess }) => {
       console.log(user);
       // Nếu cần gửi user lên backend để lưu vào database, bạn có thể làm như sau:
       const res = await apiThongBao({
-        action: "checkUser",
-        username: user.email,
+        action: "check_or_create_user_by_gmail",
+        gmail: user.email,
       });
       console.log(res);
       if (res.data.success) {
