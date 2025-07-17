@@ -1,5 +1,9 @@
+import { message } from "antd";
 import React, { useState } from "react";
-
+import { FcGoogle } from "react-icons/fc";
+import { apiThongBao } from "../../apis/handleDataAPI";
+import { auth, provider, signInWithPopup } from "../../firebaseConfig";
+import { useNavigate } from "react-router-dom";
 const Login = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({
     email: "",
@@ -7,6 +11,7 @@ const Login = ({ onLoginSuccess }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
   const [emailCopied, setEmailCopied] = useState(false); // State để hiển thị thông báo copy email
   const [passwordCopied, setPasswordCopied] = useState(false); // State để hiển thị thông báo copy password
 
@@ -50,6 +55,40 @@ const Login = ({ onLoginSuccess }) => {
       setError("Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      console.log(user);
+      // Nếu cần gửi user lên backend để lưu vào database, bạn có thể làm như sau:
+      const res = await apiThongBao({
+        action: "checkUser",
+        username: user.email,
+      });
+      console.log(res);
+      if (res.data.success) {
+        message.warning("Tài khoản chưa được đăng ký trong hệ thống!");
+        return;
+      }
+      // Tạo token và thông tin user giả lập
+      const token = "fake-jwt-token-" + Date.now();
+      const userData = {
+        id: 2,
+        email: user.email,
+        name: user.displayName,
+        role: "admin",
+      };
+
+      // Gọi callback để thông báo đăng nhập thành công
+      onLoginSuccess(userData, token);
+      message.success("Đăng nhập Google thành công!");
+      navigate("/");
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      message.error("Đăng nhập Google thất bại!");
     }
   };
 
@@ -139,7 +178,7 @@ const Login = ({ onLoginSuccess }) => {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center space-x-2"
+        className="w-full bg-blue-600 cursor-pointer hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center space-x-2"
       >
         {loading ? (
           <>
@@ -165,7 +204,24 @@ const Login = ({ onLoginSuccess }) => {
           </>
         )}
       </button>
-
+      <button
+        type="button" // Use type="button" to prevent form submission if it's not part of a form
+        disabled={loading} // Assuming 'loading' state handles this button too
+        onClick={handleGoogleLogin}
+        className="w-full bg-gray-100 hover:bg-gray-200 cursor-pointer disabled:bg-red-400 text-black font-medium py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center space-x-2"
+      >
+        {loading ? (
+          <>
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+            <span>Đang đăng nhập với Google...</span>
+          </>
+        ) : (
+          <>
+            <FcGoogle />
+            <span>Đăng nhập với Google</span>
+          </>
+        )}
+      </button>
       {/* Thông tin tài khoản demo */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 className="text-sm font-medium text-blue-800 mb-2">
